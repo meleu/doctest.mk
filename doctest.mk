@@ -101,5 +101,13 @@ $(BUILD_DIR):
 clean:
 	rm -rf $(BUILD_DIR)
 
-.PHONY: test run clean
+# Add $(BUILD_DIR)/ to .gitignore, unless it's already there
+gitignore:
+	@if ! grep -qxF '$(BUILD_DIR)/' .gitignore 2>/dev/null; then \
+		[ -s .gitignore ] && [ -n "$$(tail -c1 .gitignore)" ] && echo >> .gitignore; \
+		echo '$(BUILD_DIR)/' >> .gitignore; \
+		echo 'Added $(BUILD_DIR)/ to .gitignore'; \
+	fi
+
+.PHONY: test run clean gitignore
 
