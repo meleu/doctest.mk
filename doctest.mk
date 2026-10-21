@@ -1,6 +1,10 @@
 # Shared build rules for small C++ projects tested with doctest.
-# Use it from a project's Makefile with:
-# ```Makefile
+#
+# Save this file somewhere and then include it from a project's Makefile.
+#
+# What I use myself: save it in `~/.local/include/doctest.mk` and then
+# in projects I put this in the Makefile:
+# ```
 # include $(HOME)/.local/include/doctest.mk
 # ```
 #
@@ -11,16 +15,38 @@
 #
 # Everything generated goes to $(BUILD_DIR).
 
+# ---------------------------------------------------------------
 # Settings
 # ---------------------------------------------------------------
 
+# Choose the C++ compiler
 CXX         := clang++
-CXXFLAGS    := -std=c++23 -Wall -Wextra -Wpedantic
-DOCTEST_DIR := /usr/include/doctest
-INCLUDES    := -isystem $(DOCTEST_DIR)
+
+# Language standard and warnings: -Wall/-Wextra turn on most useful
+# warnings, -Wpedantic flags anything that isn't standard C++
+CXXFLAGS    ?= -std=c++23 -Wall -Wextra -Wpedantic
+
+# Where doctest.h lives (the path used by distro packages)
+DOCTEST_DIR ?= /usr/include/doctest
+
+# -isystem (instead of -I) treats doctest as a system header, so its
+# own code doesn't trigger our warnings
+INCLUDES    ?= -isystem $(DOCTEST_DIR)
+
+# Make the compiler write a .d file next to each .o listing the headers
+# it included, so editing a header rebuilds what depends on it.
+# -MMD : skips system headers;
+# -MP  : adds empty targets for each header so deleting one doesn't
+#        break the build
 DEPFLAGS    := -MMD -MP
+
+# Directory for all generated files (objects, .d files, binaries)
 BUILD_DIR   := build
 
+# Plain `make` runs the tests, unless your Makefile picks another goal
+.DEFAULT_GOAL ?= test
+
+# ---------------------------------------------------------------
 # Which file is which, by naming convention
 # ---------------------------------------------------------------
 
@@ -31,6 +57,7 @@ LIB_OBJS  := $(LIB_SRCS:%.cpp=$(BUILD_DIR)/%.o)
 TEST_OBJS := $(BUILD_DIR)/doctest_main.o $(TEST_SRCS:%.cpp=$(BUILD_DIR)/%.o) $(LIB_OBJS)
 APP_OBJS  := $(BUILD_DIR)/main.o $(LIB_OBJS)
 
+# ---------------------------------------------------------------
 # `make test` / `make run`
 # Pass arguments with ARGS, e.g.: make test ARGS='-tc="add*"'
 # ---------------------------------------------------------------
@@ -41,6 +68,7 @@ test: $(BUILD_DIR)/tests
 run: $(BUILD_DIR)/app
 	./$< $(ARGS)
 
+# ---------------------------------------------------------------
 # Link (set LDFLAGS / LDLIBS in your Makefile for extra libraries)
 # ---------------------------------------------------------------
 
@@ -50,6 +78,7 @@ $(BUILD_DIR)/tests: $(TEST_OBJS)
 $(BUILD_DIR)/app: $(APP_OBJS)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
+# ---------------------------------------------------------------
 # Compile: one pattern rule for every .cpp
 # ---------------------------------------------------------------
 
@@ -62,6 +91,7 @@ $(BUILD_DIR)/%.o: %.cpp | $(BUILD_DIR)
 $(BUILD_DIR)/doctest_main.o: $(DOCTEST_DIR)/doctest.h | $(BUILD_DIR)
 	$(CXX) $(CXXFLAGS) -x c++ -DDOCTEST_CONFIG_IMPLEMENT_WITH_MAIN -c $< -o $@
 
+# ---------------------------------------------------------------
 # Housekeeping
 # ---------------------------------------------------------------
 
