@@ -37,14 +37,14 @@ test: tests
 run: app
 	./app $(ARGS)
 
-# Link
+# Link (set LDFLAGS / LDLIBS in your Makefile for extra libraries)
 # ---------------------------------------------------------------
 
 tests: $(TEST_OBJS)
-	$(CXX) $(CXXFLAGS) $^ -o $@
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
 app: $(APP_OBJS)
-	$(CXX) $(CXXFLAGS) $^ -o $@
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
 # Compile: one pattern rule for every .cpp
 # ---------------------------------------------------------------
