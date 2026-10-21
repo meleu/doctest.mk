@@ -28,13 +28,14 @@ TEST_OBJS := doctest_main.o $(TEST_SRCS:.cpp=.o) $(LIB_SRCS:.cpp=.o)
 APP_OBJS  := main.o $(LIB_SRCS:.cpp=.o)
 
 # `make test` / `make run`
+# Pass arguments with ARGS, e.g.: make test ARGS='-tc="add*"'
 # ---------------------------------------------------------------
 
 test: tests
-	./tests
+	./tests $(ARGS)
 
 run: app
-	./app
+	./app $(ARGS)
 
 # Link
 # ---------------------------------------------------------------
