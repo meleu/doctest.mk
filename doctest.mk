@@ -5,9 +5,9 @@
 # ```
 #
 # Conventions:
-#   test_main.cpp, *_test.cpp  -> the `tests` binary
-#   main.cpp                   -> the `app` binary
-#   any other .cpp             -> domain code, linked into both
+#   *_test.cpp      -> the `tests` binary (doctest provides its main())
+#   main.cpp        -> the `app` binary
+#   any other .cpp  -> domain code, linked into both
 
 # Settings
 # ---------------------------------------------------------------
@@ -21,10 +21,10 @@ DEPFLAGS    := -MMD -MP
 # Which file is which, by naming convention
 # ---------------------------------------------------------------
 
-TEST_SRCS := test_main.cpp $(wildcard *_test.cpp)
+TEST_SRCS := $(wildcard *_test.cpp)
 LIB_SRCS  := $(filter-out main.cpp $(TEST_SRCS), $(wildcard *.cpp))
 
-TEST_OBJS := $(TEST_SRCS:.cpp=.o) $(LIB_SRCS:.cpp=.o)
+TEST_OBJS := doctest_main.o $(TEST_SRCS:.cpp=.o) $(LIB_SRCS:.cpp=.o)
 APP_OBJS  := main.o $(LIB_SRCS:.cpp=.o)
 
 # `make test` / `make run`
@@ -52,6 +52,10 @@ app: $(APP_OBJS)
 	$(CXX) $(CXXFLAGS) $(DEPFLAGS) $(INCLUDES) -c $< -o $@
 
 -include $(wildcard *.d)
+
+# doctest's own main(), compiled straight from its header
+doctest_main.o: $(DOCTEST_DIR)/doctest.h
+	$(CXX) $(CXXFLAGS) -x c++ -DDOCTEST_CONFIG_IMPLEMENT_WITH_MAIN -c $< -o $@
 
 # Housekeeping
 # ---------------------------------------------------------------
