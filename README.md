@@ -57,7 +57,7 @@ The role of each `.cpp` file in the project directory is defined by its name:
 | File             | Role                                                  |
 |------------------|-------------------------------------------------------|
 | `*_test.cpp`     | Tests, linked into the test binary (doctest provides `main()`) |
-| `main.cpp`       | Entry point of the application                        |
+| `main.cpp`       | Entry point of the application (optional for testing) |
 | any other `.cpp` | Domain code, linked into both the tests and the app   |
 
 For example:
@@ -69,6 +69,18 @@ calc_test.cpp   # tests for calc
 main.cpp        # the application
 Makefile        # just the include line
 ```
+
+A few rules follow from this:
+
+- **A test file only needs `#include <doctest/doctest.h>`.**
+- Don't write a `main()` for the tests (and don't define
+  `DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN`), `doctest.mk` provides it.
+- `main()` belongs in `main.cpp` only, since all other files are also linked
+  into the tests.
+- **`main.cpp` is optional for testing**: without it `make test` still works,
+  only `make run` needs it.
+- Only `.cpp` files in the same directory as the `Makefile` are picked up,
+  subdirectories are ignored.
 
 With that in place, `make test` builds and runs the tests, and `make run`
 builds and runs the application.
